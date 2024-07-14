@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
 . ../common.sh
 
 installDepend() {
     ## Check for dependencies.
     echo -e "${YELLOW}Installing dependencies...${RC}"
-    if [[ $PACKAGER == "pacman" ]]; then
+    if [ "$PACKAGER" = "pacman" ]; then
         if ! grep -q "^\s*\[multilib\]" /etc/pacman.conf; then
             echo "[multilib]" | sudo tee -a /etc/pacman.conf
             echo "Include = /etc/pacman.d/mirrorlist" | sudo tee -a /etc/pacman.conf
@@ -30,15 +30,15 @@ installDepend() {
             exit 1
         fi
         ${AUR_HELPER} --noconfirm -S wine giflib lib32-giflib libpng lib32-libpng libldap lib32-libldap gnutls lib32-gnutls \
-            mpg123 lib32-mpg123 openal lib32-openal v4l-utils lib32-v4l-utils libpulse lib32-libpulse libgpg-error \
-            lib32-libgpg-error alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib libjpeg-turbo lib32-libjpeg-turbo \
-            sqlite lib32-sqlite libxcomposite lib32-libxcomposite libxinerama lib32-libgcrypt libgcrypt lib32-libxinerama \
-            ncurses lib32-ncurses ocl-icd lib32-ocl-icd libxslt lib32-libxslt libva lib32-libva gtk3 \
-            lib32-gtk3 gst-plugins-base-libs lib32-gst-plugins-base-libs vulkan-icd-loader lib32-vulkan-icd-loader
-    elif [[ $PACKAGER == "apt-get" ]]; then
+mpg123 lib32-mpg123 openal lib32-openal v4l-utils lib32-v4l-utils libpulse lib32-libpulse libgpg-error \
+lib32-libgpg-error alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib libjpeg-turbo lib32-libjpeg-turbo \
+sqlite lib32-sqlite libxcomposite lib32-libxcomposite libxinerama lib32-libgcrypt libgcrypt lib32-libxinerama \
+ncurses lib32-ncurses ocl-icd lib32-ocl-icd libxslt lib32-libxslt libva lib32-libva gtk3 \
+lib32-gtk3 gst-plugins-base-libs lib32-gst-plugins-base-libs vulkan-icd-loader lib32-vulkan-icd-loader
+    elif [ "$PACKAGER" = "apt-get" ]; then
         sudo ${PACKAGER} update
         sudo ${PACKAGER} install -y wine64 wine32 libasound2-plugins:i386 libsdl2-2.0-0:i386 libdbus-1-3:i386 libsqlite3-0:i386
-    elif [[ $PACKAGER == "dnf|zypper" ]]; then
+    elif [ "$PACKAGER" = "dnf" ] || [ "$PACKAGER" = "zypper" ]; then
         sudo ${PACKAGER} install -y wine
     else
         sudo ${PACKAGER} install -y ${DEPENDENCIES}
@@ -46,12 +46,12 @@ installDepend() {
 }
 
 install_additional_dependencies() {
-    case $(command -v apt-get || command -v zypper || command -v dnf || command -v pacman) in
-    *apt-get)
-        version=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/lutris/lutris |
-            grep -v 'beta' |
-            tail -n1 |
-            cut -d '/' --fields=3)
+    case $(which apt-get || which zypper || which dnf || which pacman) in
+        *apt-get)
+            version=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/lutris/lutris |
+                grep -v 'beta' |
+                tail -n1 |
+                cut -d '/' --fields=3)
 
         version_no_v=$(echo "$version" | tr -d v)
         wget "https://github.com/lutris/lutris/releases/download/${version}/lutris_${version_no_v}_all.deb"
