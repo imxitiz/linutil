@@ -24,6 +24,26 @@ check $? "Downloading linutil"
 chmod +x $TMPFILE
 check $? "Making linutil executable"
 
+if ! fc-list | grep -iq "Meslo.*Nerd"; then
+    echo "Font not installed"
+
+    TEMPFONT=$(mktemp)
+    check $? "Creating the temporary font file"
+
+    curl -fsL "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/Meslo/M/Regular/MesloLGMNerdFont-Regular.ttf" -o $TEMPFONT
+    check $? "Downloading the font"
+
+    # copy the font to the fonts directory
+    mkdir -p ~/.local/share/fonts
+    check $? "Creating the fonts directory"
+
+    cp $TEMPFONT ~/.local/share/fonts/MesloLGMNerdFont-Regular.ttf
+    check $? "Copying the font to the fonts directory"
+
+    fc-cache -f -v
+    check $? "Refreshing the font cache"
+fi
+
 "$TMPFILE"
 check $? "Executing linutil"
 
